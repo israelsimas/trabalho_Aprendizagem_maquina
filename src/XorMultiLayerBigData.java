@@ -20,6 +20,6 @@ public class XorMultiLayerBigData {
 		System.out.println("Número de Layers: ");
 		int numLayers = reader.nextInt();	
 
-//		sineTest.generateNeural(numNeuro, numLayers);
+		sineTest.generateNeural(numNeuro, numLayers);
 	}
 }

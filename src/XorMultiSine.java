@@ -13,7 +13,7 @@ public class XorMultiSine {
 
 	public XorMultiSine() {
 		
-	}
+	} 
 	
 	public void generateNeural(int numNeuro, int numLayers) {
 		
