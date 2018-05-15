@@ -11,6 +11,8 @@ import org.neuroph.util.TransferFunctionType;
 
 public class XorMultiSine {
 
+	public double ERROR_MAX = 0.00001;
+	
 	public XorMultiSine() {
 		
 	} 
@@ -19,9 +21,8 @@ public class XorMultiSine {
 		
 		// create training set (logical XOR function)
 		DataSet trainingSet = new DataSet(1, 1);
-		
-		double[] angulosn = getVectorAngulosN();
-		double[] senos = getSenos(getVectorAngulos());
+		double[] angulosn   = getVectorAngulosN();
+		double[] senos 	 	 = getSenos(getVectorAngulos());
 		
 		for (int x = 0; x < angulosn.length; x++) {
 			trainingSet.addRow(new DataSetRow(new double[] {angulosn[x]}, new double[] {senos[x]}));
@@ -32,7 +33,7 @@ public class XorMultiSine {
 		
 		// learn the training set
 		BackPropagation learningrules = new BackPropagation();
-		learningrules.setMaxError(0.00001);
+		learningrules.setMaxError(ERROR_MAX);
 		myMlPerceptron.learn(trainingSet, learningrules);
 		
 		// test perceptron
@@ -76,16 +77,7 @@ public class XorMultiSine {
 	}
 	
 	private static double[] getVectorAngulos() {
-	//	angulos[0] = 0;
-	//	angulos[1] = 45;
-	//	angulos[2] = 90;
-	//	angulos[3] = 135;
-	//	angulos[4] = 180;
-	//	angulos[5] = 225;
-	//	angulos[6] = 270;
-	//	angulos[7] = 315;
-	//	angulos[8] = 360;
-	//	
+
 		int inicio = 0;
 		int fim = 360;
 		int i = 5;
@@ -102,9 +94,10 @@ public class XorMultiSine {
 	private static double[] getVectorAngulosN() {
 		double[] angulos = getVectorAngulos();
 		
+		// Normaliza os valores dos Angulos
 		double[] angulosn = new double[angulos.length];
 		for (int x = 0; x < angulos.length; x++) {
-			angulosn[x] = angulos[x]/360;
+			angulosn[x] = angulos[x] / 360;
 		}
 		
 		return angulosn;
