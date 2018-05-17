@@ -12,6 +12,7 @@ public class XorMultiLayerBigData {
 	public static void main(String[] args) {
 
 		XorMultiSine sineTest = new XorMultiSine();
-		sineTest.generateNeural();
+//		sineTest.generateNeural();
+		sineTest.testNeural();
 	}
 }

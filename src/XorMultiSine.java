@@ -1,3 +1,9 @@
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
@@ -24,11 +30,11 @@ public class XorMultiSine {
 
 		// create training set
 		DataSet trainingSet = new DataSet(1, 1);
-		double[] angulosn = getVectorAngulosN();
-		double[] senos = getSenos(getVectorAngulos());
+		double[] anglesn = getVectorAnglesN();
+		double[] sines = getSines(getVectorAngles());
 
 		for (int x = 0; x < (LEN_ARRAY_TRAINING - 1); x++) {
-			trainingSet.addRow(new DataSetRow(new double[] { angulosn[x] }, new double[] { senos[x] }));
+			trainingSet.addRow(new DataSetRow(new double[] { anglesn[x] }, new double[] { sines[x] }));
 		}
 
 		// create multi layer perceptron
@@ -41,83 +47,155 @@ public class XorMultiSine {
 		System.out.println("Training neural network ....");
 		myMlPerceptron.learn(trainingSet, learningrules);
 
-		// test perceptron
-		System.out.println("Testing trained neural network ....");
-		testNeuralNetwork(myMlPerceptron, trainingSet);
+		// save trained neural network
+		System.out.println("Saving neural network ....");
+		myMlPerceptron.save("myMlPerceptron.nnet");
+		
+		System.out.println("Neural network generated");
+	}
+	
+	public void testNeural() {
+		
+		// create training set
+		DataSet trainingSet = new DataSet(1, 1);
+		double[] anglesn 	= getVectorAnglesTestN();
+		double[] sines 		= getSines(getVectorAnglesTest());
 
+		for (int x = 0; x < (LEN_ARRAY_TEST - 1); x++) {
+			trainingSet.addRow(new DataSetRow(new double[] { anglesn[x] }, new double[] { sines[x] }));
+		}		
+		
+		// load saved neural network
+		NeuralNetwork loadedMlPerceptron = NeuralNetwork.load("myMlPerceptron.nnet");
+		
+		// test loaded neural network
+		System.out.println("Testing loaded neural network");
+		
+		try {
+			
+			testNeuralNetwork(loadedMlPerceptron, trainingSet);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	public void testNeuralNetwork(NeuralNetwork nnet, DataSet testSet) {
+	public void testNeuralNetwork(NeuralNetwork nnet, DataSet testSet) throws Exception {
+		
+	    PrintWriter pw = new PrintWriter(new File("anglesTest.csv"));
+	    StringBuilder sb = new StringBuilder();   
+			
+			double[] output = new double[LEN_ARRAY_TEST];
+			int x = 0;
 
-		double[] saidas = new double[LEN_ARRAY_TEST];
-		int x = 0;
+			for (DataSetRow dataRow : testSet.getRows()) {
 
-		for (DataSetRow dataRow : testSet.getRows()) {
+				nnet.setInput(dataRow.getInput());
+				nnet.calculate();
 
-			nnet.setInput(dataRow.getInput());
-			nnet.calculate();
+				double[] networkOutput = nnet.getOutput();
 
-			double[] networkOutput = nnet.getOutput();
+				output[x] = networkOutput[0];
+				x++;
+			}
 
-			saidas[x] = networkOutput[0];
-			x++;
+			double[] sines = getSines(getVectorAnglesTest());
+			double[] angles = getVectorAnglesTest();
+			double errorCalc = 0;
+			
+			for (int z = 0; z < LEN_ARRAY_TEST; z++) {
+				
+				errorCalc += Math.abs((output[z] - sines[z]));
+				
+				sb.append(String.valueOf(angles[z]));
+				sb.append(",");				
+				sb.append(String.valueOf(sines[z]));
+				sb.append(",");
+				sb.append(String.valueOf(angles[z]));
+				sb.append(",");		
+				sb.append(String.valueOf(output[z]));
+				sb.append("\n");
+			}
+
+			System.out.println("\n\n");
+			System.out.println("Erro Total: " + errorCalc);		
+			
+	    pw.write(sb.toString());
+	    pw.close();
+	}
+
+	private double[] getVectorAnglesTest() {
+
+		int start = 0;
+		int end = 360;
+		int i = 5;
+		
+		double qtd = end/i;
+		double[] angles = new double[(int)(qtd)+1];
+		
+		for (int x = start; x <= qtd; x++) {
+			angles[x] = x * i;
 		}
 
-		double[] senos = getSenos(getVectorAngulos());
-		double erro1 = 0;
-		for (int z = 0; z < LEN_ARRAY_TRAINING; z++) {
-			erro1 += Math.abs((saidas[z] - senos[z]));
-			System.out.println("saidas[z]: " + saidas[z]);
-			System.out.println("senos[z]: " + senos[z]);
-		}
-
-		System.out.println("\n\n");
-		System.out.println("Erro Total: " + erro1);
+		return angles;
 	}
-
-	private double[] getVectorAngulos() {
-
-		double qtde = LEN_ARRAY_TRAINING;
-		double[] angulos = new double[(int) (qtde) + 1];
-
-		// Angulos inferiores (0 - 45)
-		angulos[0]  = 0;
-		angulos[1]  = 30;
-		angulos[2]  = 60;
-		angulos[3]  = 90;
-		angulos[4]  = 120;
-		angulos[5]  = 150;
-		angulos[6]  = 180;
-		angulos[7]  = 210;
-		angulos[8]  = 240;
-		angulos[9]  = 270;
-		angulos[10] = 300;
-		angulos[11] = 330;
-		angulos[12] = 360;
-
-		return angulos;
-	}
-
-	private double[] getVectorAngulosN() {
-		double[] angulos = getVectorAngulos();
+	
+	private double[] getVectorAnglesTestN() {
+		double[] angles = getVectorAnglesTest();
 
 		// Normaliza os valores dos Angulos
-		double[] angulosn = new double[angulos.length];
-		for (int x = 0; x < angulos.length; x++) {
-			angulosn[x] = angulos[x] / 360;
+		double[] anglesn = new double[angles.length];
+		for (int x = 0; x < angles.length; x++) {
+			anglesn[x] = angles[x] / 360;
 		}
 
-		return angulosn;
+		return anglesn;
+	}
+	
+	private double[] getVectorAngles() {
+
+		double qtd = LEN_ARRAY_TRAINING;
+		double[] angles = new double[(int) (qtd) + 1];
+
+		// Angulos inferiores (0 - 45)
+		angles[0]  = 0;
+		angles[1]  = 30;
+		angles[2]  = 60;
+		angles[3]  = 90;
+		angles[4]  = 120;
+		angles[5]  = 150;
+		angles[6]  = 180;
+		angles[7]  = 210;
+		angles[8]  = 240;
+		angles[9]  = 270;
+		angles[10] = 300;
+		angles[11] = 330;
+		angles[12] = 360;
+
+		return angles;
 	}
 
-	private static double[] getSenos(double[] angulos) {
-		double[] senos = new double[angulos.length];
+	private double[] getVectorAnglesN() {
+		double[] angles = getVectorAngles();
 
-		for (int x = 0; x < angulos.length; x++) {
-			senos[x] = Math.sin(Math.toRadians(angulos[x]));
+		// Normaliza os valores dos Angulos
+		double[] anglesn = new double[angles.length];
+		for (int x = 0; x < angles.length; x++) {
+			anglesn[x] = angles[x] / 360;
 		}
 
-		return senos;
+		return anglesn;
+	}
+
+	private static double[] getSines(double[] angles) {
+		double[] sines = new double[angles.length];
+
+		for (int x = 0; x < angles.length; x++) {
+			sines[x] = Math.sin(Math.toRadians(angles[x]));
+		}
+
+		return sines;
 	}
 
 }
