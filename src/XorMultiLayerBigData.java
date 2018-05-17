@@ -12,14 +12,6 @@ public class XorMultiLayerBigData {
 	public static void main(String[] args) {
 
 		XorMultiSine sineTest = new XorMultiSine();
-		Scanner reader = new Scanner(System.in);
-		
-		System.out.println("Número de Neurônios de entrada: ");
-		int numNeuro = reader.nextInt();
-		
-		System.out.println("Número de Layers: ");
-		int numLayers = reader.nextInt();	
-
-		sineTest.generateNeural(numNeuro, numLayers);
+		sineTest.generateNeural();
 	}
 }
